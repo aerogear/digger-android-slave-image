@@ -57,12 +57,12 @@ RUN wget -O jq  https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux
 RUN mkdir -p $HOME/.android && \
     touch $HOME/.android/analytics.settings && \
     touch $HOME/.android/reposiories.cfg && \
-    # create a symlink for the debug.keystore (source: $ANDROID_HOME/android.debug, target: $HOME/.android/android.debug)
+    # create a symlink for the debug.keystore (source: $ANDROID_HOME/android.debug, target: $HOME/.android/debug.keystore)
     # $ANDROID_HOME/android.debug file currently doesn't exist in this image.
     # it will be there once the android-sdk volume is mounted (later in OpenShift).
     # the good thing about symlinks are that they can be created even when the source doesn't exist.
     # when the source becomes existent, it will just work.
-    ln -s $ANDROID_HOME/debug.keystore $HOME/.android/debug.keystore && \
+    ln -s $ANDROID_HOME/android.debug $HOME/.android/debug.keystore && \
     chown -R 1001:0 $HOME && \
     chmod -R g+rw $HOME
 
