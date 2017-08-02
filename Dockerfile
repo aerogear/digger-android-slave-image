@@ -66,6 +66,13 @@ RUN mkdir -p $HOME/.android && \
     chown -R 1001:0 $HOME && \
     chmod -R g+rw $HOME
 
+# disable Gradle daemon
+RUN mkdir -p $HOME/.gradle && \
+    echo "org.gradle.daemon=false" >> $HOME/.gradle/gradle.properties && \
+    chown -R 1001:0 $HOME/.gradle && \
+    chmod -R g+rw $HOME/.gradle
+
+
 COPY scripts/run-jnlp.sh /usr/local/bin/run-jnlp.sh 
 
 USER 1001
