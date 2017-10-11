@@ -6,6 +6,8 @@ MAINTAINER AeroGear Team <https://aerogear.org/>
 ENV ANDROID_SLAVE_SDK_BUILDER=1.0.0 \
     NODEJS_DEFAULT_VERSION=6.9.1 \
     CORDOVA_DEFAULT_VERSION=7.0.1 \
+    GRUNT_DEFAULT_VERSION=1.0.1 \
+    FASTLANE_DEFAULT_VERSION=2.60.1 \
     GRADLE_VERSION=3.5 \
     ANDROID_HOME=/opt/android-sdk-linux \
     NVM_DIR=/opt/nvm \
@@ -28,6 +30,12 @@ RUN yum install -y \
   bzip2-libs.i686 \
   java-1.8.0-openjdk-devel \
   java-1.8.0-openjdk \
+  ruby \
+  rubygems \
+  ruby-devel \
+  nodejs \
+  gcc-c++ \
+  make \
   ant \
   which\
   wget \
@@ -42,7 +50,11 @@ RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh
     echo 'CI=Y' >> ${HOME}/.bashrc && \
     nvm install ${NODEJS_DEFAULT_VERSION} && \
     chmod -R 777 ${NVM_DIR} && \
-    npm install -g cordova@${CORDOVA_DEFAULT_VERSION}
+    npm install -g cordova@${CORDOVA_DEFAULT_VERSION} && \
+    gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} && \
+    npm install -g grunt@${GRUNT_DEFAULT_VERSION}
+
+
 
 #install gradle
 RUN mkdir -p /opt/gradle && \
