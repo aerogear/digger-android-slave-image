@@ -2,6 +2,17 @@ FROM openshift/jenkins-slave-base-centos7
 
 MAINTAINER AeroGear Team <https://aerogear.org/>
 
+#build args
+ARG KEYSTORE_ALIAS=AndroidDebugKey
+ARG FULL_NAME=AG
+ARG ORG_UNIT=AeroGear
+ARG ORG_NAME=RedHat
+ARG LOCALITY=WaterFord
+ARG PROVINCE=WD
+ARG COUNTRY_CODE=IRL
+ARG STORE_PASS=android
+ARG KEY_PASS=android
+
 #env vars
 ENV ANDROID_SLAVE_SDK_BUILDER=1.0.0 \
     NODEJS_DEFAULT_VERSION=6.9.1 \
@@ -40,7 +51,8 @@ RUN yum install -y \
   which\
   wget \
   expect && \
-  yum groupinstall -y "Development Tools"
+  yum groupinstall -y "Development Tools" && \
+  yum clean all
 
 #install nvm and nodejs
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash && \
@@ -53,8 +65,6 @@ RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh
     npm install -g cordova@${CORDOVA_DEFAULT_VERSION} && \
     gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} && \
     npm install -g grunt@${GRUNT_DEFAULT_VERSION}
-
-
 
 #install gradle
 RUN mkdir -p /opt/gradle && \
@@ -70,14 +80,17 @@ RUN wget -O jq  https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux
 #fix permissions
 RUN mkdir -p $HOME/.android && \
     touch $HOME/.android/analytics.settings && \
-    touch $HOME/.android/reposiories.cfg && \
-    # create a symlink for the debug.keystore (source: $ANDROID_HOME/android.debug, target: $HOME/.android/debug.keystore)
-    # $ANDROID_HOME/android.debug file currently doesn't exist in this image.
-    # it will be there once the android-sdk volume is mounted (later in OpenShift).
-    # the good thing about symlinks are that they can be created even when the source doesn't exist.
-    # when the source becomes existent, it will just work.
-    ln -s $ANDROID_HOME/android.debug $HOME/.android/debug.keystore && \
-    chown -R 1001:0 $HOME && \
+    touch $HOME/.android/reposiories.cfg
+
+RUN keytool -genkey -noprompt -alias $KEYSTORE_ALIAS \
+    -dname "CN=$FULL_NAME, OU=$ORG_UNIT, O=$ORG_NAME, L=$LOCALITY, S=$PROVINCE, C=$COUNTRY_CODE" \
+    -keystore $HOME/.android/debug.keystore \
+    -storepass $STORE_PASS \
+    -keypass $KEY_PASS \
+    -keysize 2048 \
+    -keyalg RSA
+
+RUN chown -R 1001:0 $HOME && \
     chmod -R g+rw $HOME
 
 COPY scripts/run-jnlp.sh /usr/local/bin/run-jnlp.sh
