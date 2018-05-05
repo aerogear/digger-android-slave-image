@@ -28,7 +28,7 @@ ENV ANDROID_SLAVE_SDK_BUILDER=1.0.0 \
     JAVA_HOME=/etc/alternatives/java_sdk_1.8.0
 
 #update PATH env var
-ENV PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$NVM_DIR:/opt/gradle/gradle-$GRADLE_VERSION/bin
+ENV PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$NVM_DIR:/opt/gradle/gradle-$GRADLE_VERSION/bin:$JAVA_HOME/bin
 
 LABEL io.k8s.description="Platform for building slave android sdk image" \
       io.k8s.display-name="jenkins android sdk slave builder" \
@@ -50,9 +50,19 @@ RUN yum install -y \
   ant \
   which\
   wget \
-  expect && \
+  expect \
+  zlib-devel \
+  openssl-devel && \
   yum groupinstall -y "Development Tools" && \
   yum clean all
+
+#install ruby and fastlane
+RUN wget https://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.1.tar.gz && \
+tar -zxvpf ruby-2.5.1.tar.gz && \
+(cd ruby-2.5.1; ./configure; make; make install;) && \
+gem update --system && \
+gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} && \
+rm -rf ruby-2.5.1 ruby-2.5.1.tar.gz
 
 #install nvm and nodejs
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash && \
@@ -63,7 +73,6 @@ RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh
     nvm install ${NODEJS_DEFAULT_VERSION} && \
     chmod -R 777 ${NVM_DIR} && \
     npm install -g cordova@${CORDOVA_DEFAULT_VERSION} && \
-    gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} && \
     npm install -g grunt@${GRUNT_DEFAULT_VERSION}
 
 #install gradle
@@ -82,6 +91,7 @@ RUN mkdir -p $HOME/.android && \
     touch $HOME/.android/analytics.settings && \
     touch $HOME/.android/reposiories.cfg
 
+#create keytool
 RUN keytool -genkey -noprompt -alias $KEYSTORE_ALIAS \
     -dname "CN=$FULL_NAME, OU=$ORG_UNIT, O=$ORG_NAME, L=$LOCALITY, S=$PROVINCE, C=$COUNTRY_CODE" \
     -keystore $HOME/.android/debug.keystore \
