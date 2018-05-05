@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ -e $ANDROID_HOME/android.debug ] && [ ! -e $HOME/.android/debug.keystore ]; then
+  cp  $ANDROID_HOME/android.debug $HOME/.android/debug.keystore
+fi
 
 check_params=$(echo "$1 $2" | grep -o "cordova\|node\|npm\|java")
 
