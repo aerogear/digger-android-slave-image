@@ -30,28 +30,24 @@ RUN yum install -y \
   bzip2-libs.i686 \
   java-1.8.0-openjdk-devel \
   java-1.8.0-openjdk \
-  ruby \
-  rubygems \
-  ruby-devel \
   nodejs \
+  rubygems \
   gcc-c++ \
   make \
   ant \
   which\
   wget \
   expect \
-  zlib-devel \
-  openssl-devel && \
   yum groupinstall -y "Development Tools" && \
-  yum clean all
+  yum clean all && \
+  rm -rf /var/cache/yum
 
-#install ruby and fastlane
-RUN wget https://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.1.tar.gz && \
-tar -zxvpf ruby-2.5.1.tar.gz && \
-(cd ruby-2.5.1; ./configure; make; make install;) && \
-gem update --system && \
-gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} && \
-rm -rf ruby-2.5.1 ruby-2.5.1.tar.gz
+RUN wget https://rvm.io/binaries/centos/7/x86_64/ruby-2.4.2.tar.bz2 && \
+bunzip2 -dk ruby-2.4.2.tar.bz2 && \
+tar -xvpf ruby-2.4.2.tar && \
+(cd ruby-2.4.2; cp -R * /usr/local) && \
+gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} --no-rdoc --no-ri && \
+rm -rf ruby-2.4.2.tar.bz2 ruby-2.4.2.tar ruby-2.4.2
 
 #install nvm and nodejs
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash && \
@@ -63,8 +59,6 @@ RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh
     chmod -R 777 ${NVM_DIR} && \
     npm install -g cordova@${CORDOVA_DEFAULT_VERSION} && \
     npm install -g grunt@${GRUNT_DEFAULT_VERSION}
-
-
 
 #install gradle
 RUN mkdir -p /opt/gradle && \
