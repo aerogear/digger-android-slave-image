@@ -14,7 +14,8 @@ ENV ANDROID_SLAVE_SDK_BUILDER=1.0.0 \
     PROFILE=/etc/profile \
     CI=Y \
     BASH_ENV=/etc/profile \
-    JAVA_HOME=/etc/alternatives/java_sdk_1.8.0
+    JAVA_HOME=/etc/alternatives/java_sdk_1.8.0 \
+    RUBY_VERSION=2.4.2
 
 #update PATH env var
 ENV PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$NVM_DIR:/opt/gradle/gradle-$GRADLE_VERSION/bin:$JAVA_HOME/bin
@@ -42,12 +43,12 @@ RUN yum install -y \
   yum clean all && \
   rm -rf /var/cache/yum
 
-RUN wget https://rvm.io/binaries/centos/7/x86_64/ruby-2.4.2.tar.bz2 && \
-bunzip2 -dk ruby-2.4.2.tar.bz2 && \
-tar -xvpf ruby-2.4.2.tar && \
-(cd ruby-2.4.2; cp -R * /usr/local) && \
+RUN wget https://rvm.io/binaries/centos/7/x86_64/ruby-${RUBY_VERSION}.tar.bz2 && \
+bunzip2 -dk ruby-${RUBY_VERSION}.tar.bz2 && \
+tar -xvpf ruby-${RUBY_VERSION}.tar && \
+(cd ruby-${RUBY_VERSION}; cp -R * /usr/local) && \
 gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} --no-rdoc --no-ri && \
-rm -rf ruby-2.4.2.tar.bz2 ruby-2.4.2.tar ruby-2.4.2
+rm -rf ruby-${RUBY_VERSION}.tar.bz2 ruby-${RUBY_VERSION}.tar ruby-${RUBY_VERSION}
 
 #install nvm and nodejs
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash && \
