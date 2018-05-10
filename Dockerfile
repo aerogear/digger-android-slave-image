@@ -14,10 +14,11 @@ ENV ANDROID_SLAVE_SDK_BUILDER=1.0.0 \
     PROFILE=/etc/profile \
     CI=Y \
     BASH_ENV=/etc/profile \
-    JAVA_HOME=/etc/alternatives/java_sdk_1.8.0
+    JAVA_HOME=/etc/alternatives/java_sdk_1.8.0 \
+    RUBY_VERSION=2.4.2
 
 #update PATH env var
-ENV PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$NVM_DIR:/opt/gradle/gradle-$GRADLE_VERSION/bin
+ENV PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$NVM_DIR:/opt/gradle/gradle-$GRADLE_VERSION/bin:$JAVA_HOME/bin
 
 LABEL io.k8s.description="Platform for building slave android sdk image" \
       io.k8s.display-name="jenkins android sdk slave builder" \
@@ -30,17 +31,24 @@ RUN yum install -y \
   bzip2-libs.i686 \
   java-1.8.0-openjdk-devel \
   java-1.8.0-openjdk \
-  ruby \
-  rubygems \
-  ruby-devel \
   nodejs \
+  rubygems \
   gcc-c++ \
   make \
   ant \
   which\
   wget \
-  expect && \
-  yum groupinstall -y "Development Tools"
+  expect \
+  yum groupinstall -y "Development Tools" && \
+  yum clean all && \
+  rm -rf /var/cache/yum
+
+RUN wget https://rvm.io/binaries/centos/7/x86_64/ruby-${RUBY_VERSION}.tar.bz2 && \
+bunzip2 -dk ruby-${RUBY_VERSION}.tar.bz2 && \
+tar -xvpf ruby-${RUBY_VERSION}.tar && \
+(cd ruby-${RUBY_VERSION}; cp -R * /usr/local) && \
+gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} --no-rdoc --no-ri && \
+rm -rf ruby-${RUBY_VERSION}.tar.bz2 ruby-${RUBY_VERSION}.tar ruby-${RUBY_VERSION}
 
 #install nvm and nodejs
 RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash && \
@@ -51,10 +59,7 @@ RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh
     nvm install ${NODEJS_DEFAULT_VERSION} && \
     chmod -R 777 ${NVM_DIR} && \
     npm install -g cordova@${CORDOVA_DEFAULT_VERSION} && \
-    gem install fastlane -v ${FASTLANE_DEFAULT_VERSION} && \
     npm install -g grunt@${GRUNT_DEFAULT_VERSION}
-
-
 
 #install gradle
 RUN mkdir -p /opt/gradle && \
@@ -76,7 +81,6 @@ RUN mkdir -p $HOME/.android && \
     # it will be there once the android-sdk volume is mounted (later in OpenShift).
     # the good thing about symlinks are that they can be created even when the source doesn't exist.
     # when the source becomes existent, it will just work.
-    ln -s $ANDROID_HOME/android.debug $HOME/.android/debug.keystore && \
     chown -R 1001:0 $HOME && \
     chmod -R g+rw $HOME
 
