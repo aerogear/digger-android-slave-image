@@ -6,6 +6,7 @@ MAINTAINER AeroGear Team <https://aerogear.org/>
 ENV ANDROID_SLAVE_SDK_BUILDER=1.0.0 \
     NODEJS_DEFAULT_VERSION=6.9.1 \
     CORDOVA_DEFAULT_VERSION=7.0.1 \
+    IONIC_DEFAULT_VERSION=3.20.0 \
     GRUNT_DEFAULT_VERSION=1.0.1 \
     FASTLANE_DEFAULT_VERSION=2.60.1 \
     GRADLE_VERSION=3.5 \
@@ -59,6 +60,7 @@ RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh
     nvm install ${NODEJS_DEFAULT_VERSION} && \
     chmod -R 777 ${NVM_DIR} && \
     npm install -g cordova@${CORDOVA_DEFAULT_VERSION} && \
+    npm install -g ionic@${IONIC_DEFAULT_VERSION} && \
     npm install -g grunt@${GRUNT_DEFAULT_VERSION}
 
 #install gradle
