@@ -1,6 +1,6 @@
 # AeroGear Jenkins Slave Image For Building Android Apps
 
-## Projcect Info
+## Project Info
 
 |                 | Project Info  |
 | --------------- | ------------- |
